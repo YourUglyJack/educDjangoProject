@@ -1,0 +1,59 @@
+# python manage.py loaddata subjects.json
+# 用于将JSON文件中的数据导入到数据库中，需要确保JSON文件在fixtures文件夹里，否则需要完整路径
+
+# python manage.py dumpdata courses --indent=2
+# 将数据库中的数据导出为JSON格式，--indent=2 设置了JSON数据的缩进量
+
+# 通用外键是一种特殊类型的关联，它允许一个模型实例关联到任何其他模型实例，而不仅仅是一个特定的模型。这在你需要创建灵活的数据结构时非常有用，例如，如果你有一个评论模型，你可能希望可以评论任何类型的对象，如博客文章、图片或事件
+# 通用外键由两部分组成：
+#   ContentType：这是一个指向 Django 内置 ContentType 模型的外键。ContentType 模型存储了你的 Django 项目中所有模型的信息。
+#   object_id：这是一个用于存储关联对象的 ID 的字段。
+#
+# from django.db import models
+# from django.contrib.contenttypes.fields import GenericForeignKey
+# from django.contrib.contenttypes.models import ContentType
+#
+# class Comment(models.Model):
+#     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+#     object_id = models.PositiveIntegerField()
+#     content_object = GenericForeignKey('content_type', 'object_id')
+#
+#     text = models.TextField()
+# # 获取一个博客文章
+# post = BlogPost.objects.get(id=1)
+#
+# # 创建一个关联到这个博客文章的评论
+# comment = Comment(content_object=post, text='Great post!')
+# comment.save()
+
+# '%(class)s' 是 Python 中的旧式字符串格式化语法，
+# 其中 %s 是一个占位符，表示一个字符串，而 %(class)s 表示一个字典的键为 "class" 的值将被插入到 %s 的位置。
+
+# ******************************************************************************
+# class StudentCourseDetailView(DetailView):
+#     model = Course
+#     template_name = 'student/course/detail.html'
+#
+#     def get_queryset(self):
+#         qs = super(StudentCourseDetailView, self).get_queryset()
+#         return qs.filter(students__in=[self.request.user])
+#
+#     def get_context_data(self, **kwargs):
+#         ctx = super(StudentCourseDetailView, self).get_context_data(**kwargs)
+#         course = self.get_object()
+#         # 在 Django 中，self.kwargs 是一个字典，它包含了所有从 URL 模式中捕获的参数
+#         # 在 Django 中，kwargs 是传递给视图的关键字参数，它们通常是通过 URL 模式中的命名组捕获的。在类视图中，这些参数会被存储在视图实例的 self.kwargs 属性中
+#         # 直接调用 kwargs 可能会有问题，具体看attention.txt
+#         if self.kwargs.get('module_id'):
+#             ctx['module'] = course.modules.get(id=self.kwargs['module_id'])
+#         else:
+#             ctx['module'] = course.modules.all()[0]
+#         return ctx
+# 我理解你可能对 kwargs 和 self.kwargs 的区别感到困惑。让我尝试以更简单的方式解释。
+# 在 Python 中，kwargs 是一个常见的命名约定，用于表示“带关键字的参数”。在函数或方法定义中，**kwargs 表示接受任意数量的关键字参数。
+# 在 Django 的类视图中，self.kwargs 是一个特殊的属性，它包含从 URL 模式中捕获的所有关键字参数。这些参数是在 URL 中指定的，比如在这样的路径中 /courses/5/，数字 5 可以被捕获并存储在 self.kwargs 中。
+# 现在，让我们看看你的 get_context_data 方法。在这个方法的定义中，**kwargs 是一个参数，这意味着这个方法可以接受任意数量的关键字参数。然而，这些 kwargs 只在 get_context_data 方法中可用。一旦你离开这个方法，这些 kwargs 就无法访问了。
+# 相反，self.kwargs 是视图对象的一个属性，它在整个类中都可用。这意味着你可以在类的任何方法中使用 self.kwargs，而不仅仅是在 get_context_data 方法中。
+# 所以，当你在 get_context_data 方法中写 self.kwargs.get('module_id')，你实际上是在查找从 URL 捕获的 module_id 参数。如果你试图写 kwargs.get('module_id')，你可能会得到一个错误，因为 kwargs 在这个方法中可能并不包含 module_id 参数。
+# 我希望这可以帮助你理解 kwargs 和 self.kwargs 的区别。如果你还有其他问题，欢迎继续提问！
+# ******************************************************************************

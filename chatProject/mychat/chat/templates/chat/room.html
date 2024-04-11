@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Chat room for "{{ course.title }}"
+{% endblock %}
+
+{% block content %}
+    <div id="chat">
+
+    </div>
+    <div id="chat-input">
+        <input id="chat-message-input" type="text">
+        <input id="chat-message-submit" type="submit" value="send">
+    </div>
+{% endblock %}
+
+{% block domready %}
+let courseId = "{{ course.id }}";  // Django 模板语言会把 {{ course.id }} 替换为实际的值
+let url = 'ws://' + window.location.host + '/ws/chat/room/' + courseId + '/';
+let chatSocket = new WebSocket(url);
+
+chatSocket.onmessage = function (e) {
+    let data = JSON.parse(e.data);
+    let message = data.message;
+
+    let dateOptions = {hour: 'numeric', minute: 'numeric', hour12: true};
+    let datetime = new Date(data['datetime']).toLocaleString('en', dateOptions);
+
+    let isMe = data.user === '{{request.user}}';
+    let src = isMe ? 'me' : 'other';
+    let name = isMe ? 'Me' : data.user;
+
+    let $chat = $('#chat');
+    $chat.append('<div class="message ' + src + '">' +
+        '<strong>' + name + '</strong> ' +
+        '<span class="date">' + datetime + '</span><br>' +
+        message +
+        '</div>');
+    $chat.scrollTop($chat[0].scrollHeight);
+};
+
+chatSocket.onclose = function (e) {
+    console.error('Chat socket closed unexpectedly')
+};
+
+let $input = $('#chat-message-input');
+let $submit = $('#chat-message-submit');
+
+$submit.click(function () {
+    let message = $input.val();
+    console.log('get:' + message)
+    if (message) {
+        // send msg in json format to server
+        chatSocket.send(JSON.stringify({'message': message}));
+
+        // clear input
+        $input.val('');
+
+        // return focus
+        $input.focus();
+    }
+});
+
+$input.focus();
+$input.keyup(function (e) {
+    // keyup 是一个 JavaScript 事件，它会在用户松开一个键盘按键时被触发。
+    // $input.keyup(function (e) {...}) 是在监听输入框 $input 的 keyup 事件
+    if (e.which === 13) {
+        $submit.click();
+    }
+});
+{% endblock %}

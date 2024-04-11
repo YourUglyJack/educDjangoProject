@@ -1,0 +1,38 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Educa{% endblock %}</title>
+    <link href="{% static "css/base.css" %}" rel="stylesheet">
+</head>
+<body>
+<div id="header">
+    <a href="/" class="logo">Educa</a>
+    <ul class="menu">
+        {% if request.user.is_authenticated %}
+            <li>
+                <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
+                    {% csrf_token %}
+                </form>
+                <a href="#" class="menu-link" onclick="document.getElementById('logout-form').submit();">Logout</a>
+            </li>
+            <li>user: {{ request.user }}</li>
+        {% else %}
+            <li><a href="{% url "login" %}" class="menu-link">Sign in</a></li>
+        {% endif %}
+    </ul>
+</div>
+<div id="content">
+    {% block content %}
+    {% endblock %}
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script>
+    $(document).ready(function () {
+        {% block domready %}
+        {% endblock %}
+    });
+</script>
+</body>
+</html>
